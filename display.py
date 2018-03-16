@@ -18,5 +18,11 @@ def table(f, xs):
     for x in xs:
         print(row.format(x, f(x)))
 
-hdr('pretty table')
-table(lambda x: x**2, [0, 1, 3])
+
+def main():
+    hdr('pretty table')
+    table(lambda x: x**2, [0, 1, 3])
+
+
+if __name__ == '__main__':
+    main()
