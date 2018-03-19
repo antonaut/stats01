@@ -2,13 +2,17 @@ from math import *
 
 
 def fi(x):
-    return 1.0 / sqrt(2 * pi) * exp(-x**2)
+    return 1.0 / sqrt(2 * pi) * exp(-0.5*x**2)
     
     
 def normpdf(x, mu=1.0, sigma=0.5):
-    pass
+    arg = (x - mu) / sigma
+    return fi(arg) / sigma 
+
 
 
 if __name__ == '__main__':
     from display import table
-    table(fi, xrange(-5, 5))
+    from mathx import linspace
+    table(normpdf, \
+    	  linspace(-3, 4, 30))
