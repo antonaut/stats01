@@ -1,6 +1,18 @@
 from __future__ import print_function
 
 
+def h1(h):
+    print('\n# {}\n'.format(h.upper()))
+
+  
+def h2(h):
+    print('\n## {}\n'.format(h.upper()))
+
+
+def h3(h):
+    print('\n### {}\n'.format(h.upper()))
+
+
 def hdr(h):
     print('\n*** {} ***'.format(h))
 
