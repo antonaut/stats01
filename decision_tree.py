@@ -10,17 +10,18 @@ def unused(attr):
     return attr in used
 
 
-def build_entropy(S, attrs):
-    S = S
-    attrs = attrs
-
+def build_entropy(ds):
+    ds = ds
+    S, labels = ds
+    attrs = labels.keys()
+    
     def entropy(attr):
         def p(z):
-            return float(len(attrs[z].nodes())) \
-            / float(len(S))
+            return float(len(select(attr, ds, z))) \
+                    / float(len(S))
 
         inner = lambda z: -p(z) * math.log2(p(z))
-        return sum(map(inner, attrs[attr].nodes()))
+        return sum(map(inner, labels.get(attr).keys()))
 
     return entropy
 
@@ -30,6 +31,20 @@ def id3(S, attributes):
     ent = map(entropy, unused(attributes))
     smallest = reduce(lambda x, y: x < y, ent)
     pass
+
+def select(what, from_set, where):
+    S, _ = select_ds(what,
+    	                  from_set,
+    	                  where)
+    return S
+
+def select_ds(what, from_set, where):
+    S, labels = from_set
+    res = []
+    for row in S:
+        if getattr(row, what) == where:
+            res.append(row)
+    return (set(res), labels)
 
 
 # test data
@@ -91,9 +106,9 @@ def key_from_value(d,
     return default
 
 
-def print_test_set(hdr='wf99',\
-	   dset=test_set_wf99):
-    s, labels = dset()
+def print_dset(hdr='wf99',\
+	   dset=test_set_wf99()):
+    s, labels = dset
     print('test dataset - ' + hdr)
     print('-------------------')
     for row in s:
@@ -110,4 +125,9 @@ def print_test_set(hdr='wf99',\
 
 
 if __name__ == '__main__':
-    print_test_set()
+    print_dset()
+    print('')
+    print_dset(hdr='selw',
+    	          dset=select_ds('windy', 
+    	             test_set_wf99(),
+                  0))
