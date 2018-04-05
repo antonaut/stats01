@@ -6,6 +6,7 @@ from collections import namedtuple
 used = set()
 
 
+
 def unused(attr):
     return attr in used
 
@@ -13,15 +14,17 @@ def unused(attr):
 def build_entropy(ds):
     ds = ds
     S, labels = ds
-    attrs = labels.keys()
     
     def entropy(attr):
         def p(z):
-            return float(len(select(attr, ds, z))) \
+            T = select(attr, ds, z)
+            return float(len(T)) \
                     / float(len(S))
 
-        inner = lambda z: -p(z) * math.log2(p(z))
-        return sum(map(inner, labels.get(attr).keys()))
+        inner = lambda z: -p(z) * \
+                math.log(p(z), 2)
+        return sum(map(inner, \
+            labels.get(attr).values()))
 
     return entropy
 
@@ -52,9 +55,9 @@ def select_ds(what, from_set, where):
 def test_set_wf99():
     labels = {
     	'outlook': 
-    	    {'sunny':1, 
-          'overcast':2, 
-          'rainy':4},
+    	    {'sunny': 1, 
+          'overcast': 2, 
+          'rainy': 4},
     'temperature': 
         {'hot': 1,
          'mild': 2,
@@ -124,10 +127,19 @@ def print_dset(hdr='wf99',\
         print(res)    
 
 
-if __name__ == '__main__':
+def test_entropy():
+    ds = test_set_wf99()
+    entropy = build_entropy(ds)
+    print(entropy('windy'))
+    
+def test_select():
     print_dset()
     print('')
     print_dset(hdr='selw',
     	          dset=select_ds('windy', 
     	             test_set_wf99(),
                   0))
+
+
+if __name__ == '__main__':
+    test_entropy()
