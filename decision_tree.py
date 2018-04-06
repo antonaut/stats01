@@ -7,8 +7,8 @@ used = set()
 
 
 
-def unused(attr):
-    return attr in used
+def unused(attributes):
+    return set(attributes) - used
 
 
 def build_entropy(ds):
@@ -29,11 +29,17 @@ def build_entropy(ds):
     return entropy
 
 
-def id3(S, attributes):
-    entropy = build_entropy(S, attributes)
-    ent = map(entropy, unused(attributes))
-    smallest = reduce(lambda x, y: x < y, ent)
-    pass
+def id3(ds):
+    S, labels = ds
+    attributes = labels.keys()
+    entropy = build_entropy(ds)  
+    def smallest():
+        ent = [ (a, entropy(a)) \
+            for a in unused(attributes)]
+        print(ent)
+        return reduce(lambda x, y: \
+                      x if x[1] < y[1] else y, ent)
+    print(smallest())
 
 def select(what, from_set, where):
     S, _ = select_ds(what,
@@ -142,4 +148,4 @@ def test_select():
 
 
 if __name__ == '__main__':
-    test_entropy()
+    id3(test_set_wf99())
