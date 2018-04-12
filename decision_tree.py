@@ -2,13 +2,15 @@ import math
 from functools import reduce
 from collections import namedtuple
 
+"""
+The target attribute is always furthest
+to the right and accessed like:
+    row[-1]
+    
+It should only ever be binary, 
+only 0 or 1 are allowed values.
+"""
 
-used = set()
-
-
-
-def unused(attributes):
-    return set(attributes) - used
 
 
 def build_entropy(ds):
@@ -27,6 +29,15 @@ def build_entropy(ds):
             labels.get(attr).values()))
 
     return entropy
+
+
+class Node:
+    def __init__(self, label, 
+    	    parent, 
+      	  children):
+        self.label = label
+        self.parent = parent
+        self.children = children
 
 
 def id3(ds):
@@ -76,13 +87,50 @@ Return Root
     S, labels = ds
     attributes = labels.keys()
     entropy = build_entropy(ds)  
-    def smallest():
+    def smallest(used):
+        unused = set(attributes) - used
         ent = [ (a, entropy(a)) \
             for a in unused(attributes)]
         print(ent)
         return reduce(lambda x, y: \
                       x if x[1] < y[1] else y, ent)
-    print(smallest())
+    print(smallest(unused))
+    return id3helper(
+        None,
+        ds
+        smallest,
+        set())
+        
+
+def id3helper(
+    parent, 
+	   ds,
+	   smallest,
+	   used):
+    S, labels = ds
+    attributes = labels.keys()
+    nplus = 0
+    nminus = 0
+
+    for row in S:
+        if row[-1] == 1:
+            nplus += 1
+        else:
+            nminus += 1
+
+    plus = Node(parent, 1, None)
+    minus = Node(parent, 0, None)
+
+    if nplus == len(S):
+        return plus
+    if nminus == len(S):
+        return minus
+    if len(used) == len(attributes):
+        if nplus > nminus:
+            return plus
+        else:
+            return minus
+
 
 def select(what, from_set, where):
     S, _ = select_ds(what,
