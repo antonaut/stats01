@@ -7,8 +7,8 @@ The target attribute is always furthest
 to the right and accessed like:
     row[-1]
     
-It should only ever be binary, 
-only 0 or 1 are allowed values.
+It should only ever be binary
+meaning only 0 or 1 are allowed values.
 """
 
 
@@ -59,7 +59,7 @@ If number of predicting attributes
     of the target attribute in the 
     examples. 
 Otherwise 
-  Begin A ← The Attribute that
+  Begin A <- The Attribute that
   best classifies examples.
   Decision Tree attribute for Root = A. 
 
@@ -94,7 +94,6 @@ Return Root
         print(ent)
         return reduce(lambda x, y: \
                       x if x[1] < y[1] else y, ent)
-    print(smallest(unused))
     return id3helper(
         None,
         ds
@@ -120,16 +119,31 @@ def id3helper(
 
     plus = Node(parent, 1, None)
     minus = Node(parent, 0, None)
+    most_common = minus
+    
+    if nplus > nminus:
+        most_common = plus
 
     if nplus == len(S):
         return plus
     if nminus == len(S):
         return minus
     if len(used) == len(attributes):
-        if nplus > nminus:
-            return plus
-        else:
-            return minus
+        return most_common   
+    
+    A = smallest(used)
+    children = []
+    current = Node(parent, A, children)
+    for val in labels.get(A).values():
+        T, _ = select(A, ds, val)
+        if len(T) == 0:
+            return most_common
+        children.append(
+        	  id3helper(current,
+        	  	  (T, labels),
+        	  	  smallest,
+        	  	  used + set(A))
+    return current
 
 
 def select(what, from_set, where):
@@ -137,6 +151,7 @@ def select(what, from_set, where):
     	                  from_set,
     	                  where)
     return S
+
 
 def select_ds(what, from_set, where):
     S, labels = from_set
@@ -236,7 +251,12 @@ def test_select():
     	          dset=select_ds('windy', 
     	             test_set_wf99(),
                   0))
-
+def print_dtree(dt):
+    print(dt.label)
+    for c in dt.children:
+        print('  ', end='')
+        print_dtree
 
 if __name__ == '__main__':
-    id3(test_set_wf99())
+    dtree = id3(test_set_wf99())
+    print_dtree(dtree)
