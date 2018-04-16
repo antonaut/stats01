@@ -1,3 +1,4 @@
+# -*- coding: utf-8
 import math
 from functools import reduce
 from collections import namedtuple
@@ -32,8 +33,9 @@ def build_entropy(ds):
 
 
 class Node:
-    def __init__(self, label, 
-    	    parent, 
+    def __init__(self, 
+    	    parent,
+    	    label,
       	  children):
         self.label = label
         self.parent = parent
@@ -87,18 +89,17 @@ Return Root
     S, labels = ds
     attributes = labels.keys()
     entropy = build_entropy(ds)  
-    def smallest(used):
-        unused = set(attributes) - used
+    def smallest(unused):
         ent = [ (a, entropy(a)) \
-            for a in unused(attributes)]
-        print(ent)
+            for a in unused ]            
         return reduce(lambda x, y: \
                       x if x[1] < y[1] else y, ent)
+    print(attributes[0])
     return id3helper(
         None,
-        ds
+        ds,
         smallest,
-        set())
+        set([attributes[0]]))
         
 
 def id3helper(
@@ -110,6 +111,10 @@ def id3helper(
     attributes = labels.keys()
     nplus = 0
     nminus = 0
+
+    print(parent)
+    print(used)
+
 
     for row in S:
         if row[-1] == 1:
@@ -129,20 +134,22 @@ def id3helper(
     if nminus == len(S):
         return minus
     if len(used) == len(attributes):
-        return most_common   
-    
-    A = smallest(used)
+        return most_common
+
+    unused = set(attributes) - used
+    A = smallest(unused)[0]
     children = []
     current = Node(parent, A, children)
+
     for val in labels.get(A).values():
-        T, _ = select(A, ds, val)
+        T = select(A, ds, val)
         if len(T) == 0:
             return most_common
         children.append(
         	  id3helper(current,
         	  	  (T, labels),
         	  	  smallest,
-        	  	  used + set(A))
+        	  	  used.union(set([A]))))
     return current
 
 
@@ -254,7 +261,7 @@ def test_select():
 def print_dtree(dt):
     print(dt.label)
     for c in dt.children:
-        print('  ', end='')
+        print '  ',
         print_dtree
 
 if __name__ == '__main__':
