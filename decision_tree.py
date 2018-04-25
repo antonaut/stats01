@@ -269,14 +269,24 @@ def test_select():
     	          dset=select_ds('windy', 
     	             test_set_wf99(),
                   0))
-def print_dtree(dt, depth=0):
-    print(dt)
+def print_dtree(dt, labels, depth=0):
+    print dt
     if not dt.children:
         return
     for k in dt.children.keys():
-        print '  '*depth + str(k) + ':',
-        print_dtree(dt.children[k], depth + 1)
+        V = None
+
+        if dt.attribute:
+            V = key_from_value(labels.get(dt.attribute), k)
+        s = (' ' * depth)
+        s += str(V)
+        s += ':'
+        
+        print s,
+        print_dtree(dt.children[k], labels, depth + 1)
 
 if __name__ == '__main__':
-    dtree = id3(test_set_wf99())
-    print_dtree(dtree)
+    ds = test_set_wf99()
+    _, labels = ds
+    dtree = id3(ds)
+    print_dtree(dtree, labels)
