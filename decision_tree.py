@@ -44,9 +44,10 @@ class Node:
         self.children = children
     
     def __repr__(self):
-        return '(' + \
-        	self.attribute + ': ' + \
-        	str(self.label) + ')'
+        s = self.attribute
+        if self.label != None:
+            s += ' -> ' + str(self.label)
+        return s
 
 
 def id3(ds):
@@ -125,14 +126,14 @@ def id3helper(
             nplus += 1
         else:
             nminus += 1
-
+    pred_name = 'play'
     plus = Node(parent, 
                 1,
-                attributes[-1], 
+                pred_name, 
                 None)
     minus = Node(parent,
     	            0,
-    	            attributes[-1],
+    	            pred_name,
     	            None)
     most_common = minus
     
@@ -173,7 +174,7 @@ def select(what, from_set, where):
 
 def select_ds(what, from_set, where):
     S, labels = from_set
-    res = []
+    res = [] 
     for row in S:
         if getattr(row, what) == where:
             res.append(row)
@@ -201,6 +202,7 @@ def test_set_wf99():
     'play': 
         {'yes': 1, 
          'no': 0}}
+
 
     n = namedtuple('n',
         	    """outlook,
@@ -261,6 +263,7 @@ def test_entropy():
     ds = test_set_wf99()
     entropy = build_entropy(ds)
     print(entropy('windy'))
+
     
 def test_select():
     print_dset()
@@ -269,8 +272,12 @@ def test_select():
     	          dset=select_ds('windy', 
     	             test_set_wf99(),
                   0))
-def print_dtree(dt, labels, depth=0):
-    print dt
+
+
+def print_dtree(dt, labels, depth=1):
+    T = (' ' * depth)
+    D = '-' if depth % 2 == 0 else '*'
+    print T+D+ ' ' +str(dt).upper()
     if not dt.children:
         return
     for k in dt.children.keys():
@@ -278,12 +285,12 @@ def print_dtree(dt, labels, depth=0):
 
         if dt.attribute:
             V = key_from_value(labels.get(dt.attribute), k)
-        s = (' ' * depth)
-        s += str(V)
-        s += ':'
+        s = T+D*depth + ' ' + str(V)
         
-        print s,
+        print s
         print_dtree(dt.children[k], labels, depth + 1)
+    print
+
 
 if __name__ == '__main__':
     ds = test_set_wf99()
