@@ -8,7 +8,7 @@ The target attribute is always furthest
 to the right and accessed like:
     row[-1]
     
-It should only ever be binary
+It should always be binary,
 meaning only 0 or 1 are allowed values.
 """
 
@@ -36,10 +36,17 @@ class Node:
     def __init__(self, 
     	    parent,
     	    label,
+    	    attr,
       	  children):
         self.label = label
+        self.attribute = attr
         self.parent = parent
         self.children = children
+    
+    def __repr__(self):
+        return '(' + \
+        	self.attribute + ': ' + \
+        	str(self.label) + ')'
 
 
 def id3(ds):
@@ -94,7 +101,7 @@ Return Root
             for a in unused ]            
         return reduce(lambda x, y: \
                       x if x[1] < y[1] else y, ent)
-    print(attributes[0])
+
     return id3helper(
         None,
         ds,
@@ -112,9 +119,6 @@ def id3helper(
     nplus = 0
     nminus = 0
 
-    print(parent)
-    print(used)
-
 
     for row in S:
         if row[-1] == 1:
@@ -122,8 +126,14 @@ def id3helper(
         else:
             nminus += 1
 
-    plus = Node(parent, 1, None)
-    minus = Node(parent, 0, None)
+    plus = Node(parent, 
+                1,
+                attributes[-1], 
+                None)
+    minus = Node(parent,
+    	            0,
+    	            attributes[-1],
+    	            None)
     most_common = minus
     
     if nplus > nminus:
@@ -138,18 +148,19 @@ def id3helper(
 
     unused = set(attributes) - used
     A = smallest(unused)[0]
-    children = []
-    current = Node(parent, A, children)
+    children = {}
+    current = Node(parent, None, A, children)
 
     for val in labels.get(A).values():
         T = select(A, ds, val)
         if len(T) == 0:
-            return most_common
-        children.append(
-        	  id3helper(current,
-        	  	  (T, labels),
-        	  	  smallest,
-        	  	  used.union(set([A]))))
+            children[val] = most_common
+        else:
+            children[val] = \
+        	      id3helper(current,
+        	      	  (T, labels),
+        	  	      smallest,
+        	      	  used.union(set([A])))
     return current
 
 
@@ -258,11 +269,13 @@ def test_select():
     	          dset=select_ds('windy', 
     	             test_set_wf99(),
                   0))
-def print_dtree(dt):
-    print(dt.label)
-    for c in dt.children:
-        print '  ',
-        print_dtree
+def print_dtree(dt, depth=0):
+    print(dt)
+    if not dt.children:
+        return
+    for k in dt.children.keys():
+        print '  '*depth + str(k) + ':',
+        print_dtree(dt.children[k], depth + 1)
 
 if __name__ == '__main__':
     dtree = id3(test_set_wf99())
